@@ -108,11 +108,7 @@ The launcher supports both cold starts and launches through an existing VS Code 
   2. Open the Start Menu.
   3. Find `VS Code Agents`.
   4. Pin it to the taskbar again.
-5. VS Code Updates
-The launcher does not modify VS Code's executable files or internal application resources.
-However, VS Code updates may change its window creation behavior or resource directory layout.
-The script automatically searches for `sessions.ico`, but it is recommended to retest the launcher after major VS Code updates.
-If the script is stored inside the VS Code installation directory, consider keeping a backup because installation updates or repairs may affect custom files.
+5. VS Code Updates: The launcher does not modify VS Code's executable files or internal application resources.However, VS Code updates may change its window creation behavior or resource directory layout.The script automatically searches for `sessions.ico`, but it is recommended to retest the launcher after major VS Code updates.If the script is stored inside the VS Code installation directory, consider keeping a backup because installation updates or repairs may affect custom files.
 
 ## Troubleshooting
 
