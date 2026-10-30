@@ -6,7 +6,7 @@ A PowerShell-based launcher for Visual Studio Code on Windows that allows the **
 
 - Launches the dedicated Agents Window directly using the `--agents` command-line argument.
 - Assigns a custom, window-level `AppUserModelID` to separate it from regular VS Code windows in the taskbar.
-- Uses the official VS Code Agents icon (`sessions.ico`).
+- Uses the official VS Code Agents icon (`sessions.ico`). If icon file cannot be found, fall back to standard VS Code icon.
 - Works with the existing VS Code installation, user profile, extensions, settings, and authentication.
 - Supports cold starts and launching while regular VS Code windows are already running.
 - Creates a dedicated Start Menu shortcut that can be pinned to the Windows taskbar.
@@ -18,12 +18,6 @@ A PowerShell-based launcher for Visual Studio Code on Windows that allows the **
 - **PowerShell:** 64-bit Windows PowerShell 5.1 or later.
 - **Permissions:** Standard user permissions are sufficient. Administrator privileges are not required.
 - **Dependencies:** No additional 3rd-party codes required. The script uses built-in Windows APIs, .NET, and COM interfaces.
-
-### Official Agents Icon
-
-The script automatically searches the VS Code installation directory for the official `sessions.ico` file.
-It supports both standard and versioned resource directory layouts.
-If the icon cannot be found, the script falls back to the standard VS Code icon.
 
 ## Installation and Setup
 
