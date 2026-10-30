@@ -29,15 +29,7 @@ Save `code.exe.agents.ps1` in a suitable location. For example:
 ```
 The script can also be stored in another location, provided it can locate the VS Code installation.
 
-### 2. Optional Step before Setup (For VS Code 1.21 or older)
-```powershell
-$install = Join-Path $env:LOCALAPPDATA 'Programs\Microsoft VS Code'
-$bin = Join-Path $install 'bin'
-
-New-Item -ItemType Directory -Path $bin -Force
-```
-
-### 3. Create the Start Menu Shortcut
+### 2. Create the Start Menu Shortcut
 
 Open 64-bit Windows PowerShell and run:
 ```powershell
@@ -52,7 +44,7 @@ The `-InstallShortcut` parameter:
 - Sets the official Agents Window icon when available.
 - Configures the shortcut to launch the PowerShell script.
 
-### 4. Pin to the Taskbar
+### 3. Pin to the Taskbar
 
 1. Open the Windows Start Menu.
 2. Find `VS Code Agents`.
@@ -63,7 +55,7 @@ You should now have separate taskbar entries for:
 - **Visual Studio Code:** Regular code editor windows.
 - **VS Code Agents:** The dedicated Agents Window.
 
-## Run Usage
+## Usage
 
 ### Launching Agents Window
 
