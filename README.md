@@ -14,10 +14,10 @@ A PowerShell-based launcher for Visual Studio Code on Windows that allows the **
 ## Prerequisites
 
 - **Operating System:** 64-bit Windows 10 or Windows 11.
-- **VS Code:** An installed desktop version that supports the Agents Window and the `--agents` command-line argument.
+- **VS Code:** An desktop installation that supports the Agents Window and the `--agents` command-line argument.
 - **PowerShell:** 64-bit Windows PowerShell 5.1 or later.
 - **Permissions:** Standard user permissions are sufficient. Administrator privileges are not required.
-- **Dependencies:** No additional 3rd-party codes required. The script uses built-in Windows APIs, .NET, and COM interfaces.
+- **Dependencies:** No 3rd-party codes required. The script uses built-in Windows APIs, .NET, and COM interfaces.
 
 ## Installation and Setup
 
