@@ -1,3 +1,4 @@
+
 <#
 .SYNOPSIS
     Launches the regular VS Code editor and closes Agents Windows restored by that launch.
@@ -7,6 +8,7 @@
     It starts the existing Code.exe WITHOUT --new-window, so VS Code can restore its
     previous editor folders/workspaces. It then detects newly-created VS Code top-level
     windows whose title is exactly "Agents" and sends them WM_CLOSE.
+    Newly restored Editor windows are maximized after they are detected.
 
     Existing VS Code windows that were already open before this launcher ran are not
     closed. The separate code.exe.agents.ps1 launcher is not modified by this script.
@@ -151,6 +153,11 @@ public static class VSCodeEditorLauncherNative
     [DllImport("user32.dll")]
     private static extern bool IsWindow(IntPtr hwnd);
 
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hwnd, int command);
+
+    private const int SW_SHOWMAXIMIZED = 3;
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool PostMessage(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
 
@@ -233,6 +240,15 @@ public static class VSCodeEditorLauncherNative
 
         // WM_CLOSE requests a normal window close; it does not terminate Code.exe.
         return PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+    }
+
+    public static void MaximizeWindow(IntPtr hwnd)
+    {
+        if (IsWindow(hwnd))
+        {
+            // Maximize the actual VS Code top-level window, not the PowerShell launcher.
+            ShowWindow(hwnd, SW_SHOWMAXIMIZED);
+        }
     }
 
     public static void SetShortcutAppUserModelId(string shortcutPath, string appId)
@@ -342,6 +358,7 @@ try {
 
     $processedHandles = New-Object 'System.Collections.Generic.HashSet[long]'
     $editorWindowSeen = $false
+    $editorWindowHandles = New-Object 'System.Collections.Generic.List[System.IntPtr]'
     $firstEditorWindowAt = $null
     $agentWindowsClosed = 0
     $lastAgentCloseAt = $null
@@ -382,6 +399,10 @@ try {
                     $firstEditorWindowAt = [DateTime]::UtcNow
                 }
                 $editorWindowSeen = $true
+
+                # Maximize the restored Editor window (not the Agents Window).
+                [VSCodeEditorLauncherNative]::MaximizeWindow($window.Handle)
+                $editorWindowHandles.Add($window.Handle)
             }
         }
 
@@ -408,6 +429,11 @@ try {
         Start-Sleep -Milliseconds 250
     }
 
+    # Re-apply maximization after VS Code has had time to finish restoring window layout.
+    foreach ($editorHandle in $editorWindowHandles) {
+        [VSCodeEditorLauncherNative]::MaximizeWindow($editorHandle)
+    }
+
     if ($agentWindowsClosed -gt 0) {
         Write-Host "Closed $agentWindowsClosed restored Agents window(s)."
     }
@@ -416,6 +442,12 @@ try {
         if ($agentWindowsClosed -gt 0) {
             # No Editor workspace was restored. Open a blank Editor as a fallback;
             # this is only used when the normal restore produced Agents but no Editor.
+            $fallbackBefore = @([VSCodeEditorLauncherNative]::GetCodeWindows($CodeExe))
+            $fallbackBeforeHandles = New-Object 'System.Collections.Generic.HashSet[long]'
+            foreach ($fallbackWindow in $fallbackBefore) {
+                [void]$fallbackBeforeHandles.Add([long]$fallbackWindow.Handle.ToInt64())
+            }
+
             $fallback = New-Object System.Diagnostics.ProcessStartInfo
             $fallback.FileName = $CodeExe
             $fallback.Arguments = '--new-window'
@@ -423,7 +455,34 @@ try {
             $fallback.UseShellExecute = $false
             $fallback.CreateNoWindow = $true
             [void][System.Diagnostics.Process]::Start($fallback)
-            Write-Warning 'No Editor window was restored, so a new blank Editor window was opened.'
+
+            # Wait briefly for the fallback blank Editor window and maximize it.
+            $fallbackDeadline = [DateTime]::UtcNow.AddSeconds(15)
+            $fallbackMaximized = $false
+            while ([DateTime]::UtcNow -lt $fallbackDeadline -and -not $fallbackMaximized) {
+                $fallbackWindows = @([VSCodeEditorLauncherNative]::GetCodeWindows($CodeExe))
+                foreach ($fallbackWindow in $fallbackWindows) {
+                    $fallbackHandle = [long]$fallbackWindow.Handle.ToInt64()
+                    if ($fallbackBeforeHandles.Contains($fallbackHandle)) { continue }
+                    if ([string]::Equals(
+                        $fallbackWindow.Title.Trim(),
+                        'Agents',
+                        [System.StringComparison]::OrdinalIgnoreCase
+                    )) { continue }
+
+                    [VSCodeEditorLauncherNative]::MaximizeWindow($fallbackWindow.Handle)
+                    $fallbackMaximized = $true
+                    break
+                }
+                if (-not $fallbackMaximized) { Start-Sleep -Milliseconds 250 }
+            }
+
+            if (-not $fallbackMaximized) {
+                Write-Warning 'A blank Editor window was opened, but its window could not be detected for maximization.'
+            }
+            else {
+                Write-Warning 'No Editor window was restored, so a new blank, maximized Editor window was opened.'
+            }
         }
         else {
             Write-Warning 'No restored Editor window was detected within 45 seconds. No existing window was forcibly terminated.'
