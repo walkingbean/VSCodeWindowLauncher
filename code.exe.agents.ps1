@@ -187,6 +187,9 @@ public static class VscodeAgentTaskbarNative
 {
     private const uint GW_OWNER = 4;
 
+    // ShowWindow command: activate and display the window maximized.
+    private const int SW_SHOWMAXIMIZED = 3;
+
     private const uint GPS_READWRITE = 0x00000002;
 
     private const ushort VT_LPWSTR = 31;
@@ -555,10 +558,11 @@ public static class VscodeAgentTaskbarNative
                             appId
                         );
 
+                        // Maximize the Agents Window instead of merely restoring it.
                         ShowWindow(
                             target,
-                            9
-                        ); // SW_RESTORE
+                            SW_SHOWMAXIMIZED
+                        );
 
                         SetForegroundWindow(target);
 
