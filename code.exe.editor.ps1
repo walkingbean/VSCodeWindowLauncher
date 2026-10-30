@@ -40,7 +40,7 @@ $ShortcutName = 'VS Code Editor'
 $StartupTimeoutSeconds = 30
 $MaximizeRetrySeconds = 6
 $PollIntervalMilliseconds = 250
-$LogPath = Join-Path $env:LOCALAPPDATA 'VSCodeEditorLauncher.log'
+$LogPath = Join-Path $PSScriptRoot 'code.exe.editor.ps1.log'
 $SharedDatabasePath = Join-Path $env:USERPROFILE '.vscode-shared\sharedStorage\state.vscdb'
 
 function Write-Log {
